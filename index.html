@@ -69,13 +69,13 @@
         <label for="entryDate">Date:</label>
         <input id="entryDate" type="date" />
         <label for="symbol">Symbol:</label>
-        <input id="symbol" placeholder="e.g. AAPL" />
+        <input id="symbol" />
         <label for="avgPrice">Avg Price:</label>
-        <input id="avgPrice" type="number" step="0.01" placeholder="opt." />
+        <input id="avgPrice" type="number" step="0.01" />
         <label for="shares">Shares:</label>
-        <input id="shares" type="number" placeholder="opt." />
+        <input id="shares" type="number" />
         <label for="stopPrice">Stop:</label>
-        <input id="stopPrice" type="number" step="0.01" placeholder="opt." />
+        <input id="stopPrice" type="number" step="0.01" />
         <label for="notes">Notes:</label>
         <textarea id="notes" placeholder="Entry rationale (optional)"></textarea>
         <button onclick="logEntry()">Log Trade</button>
@@ -154,7 +154,7 @@
       const logDiv = document.getElementById('log'); logDiv.innerHTML = '';
       if (currentPattern === 'Home') {
         logDiv.innerHTML = `
-          <h2>Trade Journal Home</h2>
+          <h2>Reaps Trading Journal</h2>
           <p>This tool helps you log and review your trades. Use the sidebar or dropdown to navigate:</p>
           <ul>
             <li><strong>Flagging:</strong> Mark stocks to watch.</li>
@@ -165,7 +165,7 @@
           <p><strong>Date:</strong> Blank defaults to today.</p>
           <p><strong>Notes:</strong> Record entry rationale or observations.</p>
           <p>Click <em>Edit</em> to update any entry.</p>
-          <p><strong></strong> <a href="https://www.notion.so/FAQ-SAR-Trading-Strategy-Part-1-Chart-Settings-Setup-2153781d3c16804792c4c266114f7395" target="_blank" style="color: var(--accent);">Strategy FAQ</a></p>
+          <p> <a href="https://www.notion.so/FAQ-SAR-Trading-Strategy-Part-1-Chart-Settings-Setup-2153781d3c16804792c4c266114f7395" target="_blank" style="color: var(--accent);">Strategy FAQ</a><strong><- Thanks Skyler</strong></p>
         `;
         return;
       }
