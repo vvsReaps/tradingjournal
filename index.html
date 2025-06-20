@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Trade Journal v3</title>
+  <title>Trade Journal v1 [BETA]</title>
   <style>
     :root {
       --bg: #121212;
@@ -83,34 +83,52 @@
     </div>
   </div>
   <script>
-    const categories = ['Home','Flagging','Watch for Breakout','Current Positions','Wins','Losses'];
-    let currentPattern=null, entries=[];
-    const sidebarList=document.getElementById('patterns'), dropdown=document.getElementById('patternType');
+    const categories = ['Home', 'Flagging', 'Watch for Breakout', 'Current Positions', 'Wins', 'Losses'];
+    let currentPattern = null, entries = [];
+    const sidebarList = document.getElementById('patterns'), dropdown = document.getElementById('patternType');
 
     function saveEntries(){ localStorage.setItem('tradeJournalEntries', JSON.stringify(entries)); }
-    function loadEntries(){ const data=localStorage.getItem('tradeJournalEntries'); if(data) entries=JSON.parse(data); }
+    function loadEntries(){ const data = localStorage.getItem('tradeJournalEntries'); if(data) entries = JSON.parse(data); }
 
     function initCategories(){
-      categories.forEach(cat=>{
-        const li=document.createElement('li'); li.className='sub'; li.dataset.pattern=cat; li.innerText=cat;
-        li.addEventListener('click',()=>selectPattern(cat)); sidebarList.appendChild(li);
+      categories.forEach(cat => {
+        const li = document.createElement('li'); li.className = 'sub'; li.dataset.pattern = cat; li.innerText = cat;
+        li.addEventListener('click', () => selectPattern(cat)); sidebarList.appendChild(li);
       });
-      categories.filter(c=>c!=='Home').forEach(cat=>{
-        const opt=document.createElement('option'); opt.value=cat; opt.innerText=cat; dropdown.appendChild(opt);
+      categories.filter(c => c !== 'Home').forEach(cat => {
+        const opt = document.createElement('option'); opt.value = cat; opt.innerText = cat; dropdown.appendChild(opt);
       });
     }
 
-    document.addEventListener('DOMContentLoaded',()=>{ loadEntries(); initCategories(); dropdown.addEventListener('change',()=>selectPattern(dropdown.value)); selectPattern('Home'); });
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEntries(); initCategories(); dropdown.addEventListener('change', () => selectPattern(dropdown.value)); selectPattern('Home');
+    });
 
     function selectPattern(pattern){
-      currentPattern=pattern; if(pattern!=='Home') dropdown.value=pattern;
-      document.querySelectorAll('.sidebar .sub.selected').forEach(el=>el.classList.remove('selected'));
+      currentPattern = pattern; if(pattern !== 'Home') dropdown.value = pattern;
+      document.querySelectorAll('.sidebar .sub.selected').forEach(el => el.classList.remove('selected'));
       document.querySelector(`.sidebar .sub[data-pattern='${pattern}']`)?.classList.add('selected');
       renderLog();
     }
 
     function logEntry(){
-      if (currentPattern === 'Home') {
+      const sym = document.getElementById('symbol').value.trim().toUpperCase(); if(!sym) return alert('Enter a symbol');
+      const avg = parseFloat(document.getElementById('avgPrice').value) || null;
+      const shares = parseInt(document.getElementById('shares').value) || null;
+      const stop = parseFloat(document.getElementById('stopPrice').value) || null;
+      const notes = document.getElementById('notes').value.trim() || null;
+      const dateInput = document.getElementById('entryDate').value;
+      const now = dateInput ? new Date(dateInput) : new Date();
+      const dateKey = now.toLocaleDateString(), dateStr = now.toLocaleString();
+      const entry = { id: Date.now() + Math.random(), sym, pattern: currentPattern, avg, shares, stop, notes, date: dateStr, dateKey };
+      entries.unshift(entry); saveEntries();
+      ['entryDate','symbol','avgPrice','shares','stopPrice','notes'].forEach(id => document.getElementById(id).value='');
+      renderLog();
+    }
+
+    function renderLog(){
+      const logDiv = document.getElementById('log'); logDiv.innerHTML = '';
+      if(currentPattern === 'Home'){
         logDiv.innerHTML = `
           <h2>Trading Journal v3</h2>
           <p>This tool helps you log and review your trades. Use the sidebar or dropdown to navigate:</p>
@@ -123,38 +141,19 @@
           </ul>
           <p><strong>Date:</strong> Leave blank to default to today or pick a past date.</p>
           <p><strong>Notes:</strong> Record your entry rationale or observations here.</p>
-          <p><strong>Report:</strong> Use the Report button to open the Base.Report page for flagged/breakout stocks. <- NEW FEATURE!!!</p>
+          <p><strong>Report:</strong> Use the Report button to open the Base.Report page for flagged/breakout stocks. NEW!!!</p>
           <p>Click <em>Edit</em> on any entry to update details or change sections.</p>
-        `;
-        return;
+        `; return;
       }
-      const sym=document.getElementById('symbol').value.trim().toUpperCase(); if(!sym) return alert('Enter a symbol');
-      const avg=parseFloat(document.getElementById('avgPrice').value)||null;
-      const shares=parseInt(document.getElementById('shares').value)||null;
-      const stop=parseFloat(document.getElementById('stopPrice').value)||null;
-      const notes=document.getElementById('notes').value.trim()||null;
-      const dateInput=document.getElementById('entryDate').value;
-      const now=dateInput?new Date(dateInput):new Date();
-      const dateKey=now.toLocaleDateString(), dateStr=now.toLocaleString();
-      const entry={id:Date.now()+Math.random(),sym,pattern:currentPattern,avg,shares,stop,notes,date:dateStr,dateKey};
-      entries.unshift(entry); saveEntries();
-      ['entryDate','symbol','avgPrice','shares','stopPrice','notes'].forEach(id=>document.getElementById(id).value='');
-      renderLog();
-    }
-
-    function renderLog(){
-      const logDiv=document.getElementById('log'); logDiv.innerHTML='';
-      if(currentPattern==='Home'){
-        logDiv.innerHTML=`<h2>Trading Journal</h2><p>Select a category to begin.</p>`; return;
-      }
-      const filtered=entries.filter(e=>e.pattern===currentPattern);
-      if(!filtered.length){ logDiv.textContent=`No entries for ${currentPattern}`; return; }
-      const groups={}; filtered.forEach(e=>{ if(!groups[e.dateKey])groups[e.dateKey]=[]; groups[e.dateKey].push(e); });
-      Object.keys(groups).sort().forEach(dateKey=>{
-        const dv=document.createElement('div'); dv.className='date-group'; dv.innerHTML=`<h3>${dateKey}</h3>`;
-        groups[dateKey].forEach(e=>{
-          const div=document.createElement('div'); div.className='entry';
-          let html=`<span><strong>${e.sym}</strong>${e.avg!=null?` | Avg: $${e.avg.toFixed(2)}`:''}${e.shares!=null?` | Shares: ${e.shares}`:''}${e.stop!=null?` | Stop: $${e.stop.toFixed(2)}`:''}</span>`;
+      const filtered = entries.filter(e => e.pattern === currentPattern);
+      if(!filtered.length){ logDiv.textContent = `No entries for ${currentPattern}`; return; }
+      const groups = {};
+      filtered.forEach(e => { if(!groups[e.dateKey]) groups[e.dateKey] = []; groups[e.dateKey].push(e); });
+      Object.keys(groups).sort().forEach(dateKey => {
+        const dv = document.createElement('div'); dv.className = 'date-group'; dv.innerHTML = `<h3>${dateKey}</h3>`;
+        groups[dateKey].forEach(e => {
+          const div = document.createElement('div'); div.className = 'entry';
+          let html = `<span><strong>${e.sym}</strong>${e.avg!=null?` | Avg: $${e.avg.toFixed(2)}`:''}${e.shares!=null?` | Shares: ${e.shares}`:''}${e.stop!=null?` | Stop: $${e.stop.toFixed(2)}`:''}</span>`;
           if(e.notes) html+=`<div class='note'>${e.notes}</div>`;
           html+=`<span>${e.date}</span>`;
           if(e.pattern==='Current Positions'&&e.avg!=null&&e.stop!=null&&e.shares){
@@ -171,35 +170,38 @@
     }
 
     function editEntry(id){
-      const e=entries.find(x=>x.id===id); if(!e) return;
-      const div=document.querySelector(`.entry button[onclick*='editEntry(${id})']`).parentElement;
-      div.innerHTML=`<div class='edit-form'>
-        <label>Category:</label><select id='editPattern'>${categories.filter(c=>c!=='Home').map(c=>`<option${c===e.pattern?' selected':''}>${c}</option>`).join('')}</select>
-        <label>Date:</label><input id='editDate' type='date' value='${new Date(e.date).toISOString().slice(0,10)}'/>
-        <label>Symbol:</label><input id='editSym' value='${e.sym}'/>
-        <label>Avg Price:</label><input id='editAvg' type='number' step='0.01' value='${e.avg||''}'/>
-        <label>Shares:</label><input id='editShares' type='number' value='${e.shares||''}'/>
-        <label>Stop:</label><input id='editStop' type='number' step='0.01' value='${e.stop||''}'/>
-        <label>Notes:</label><textarea id='editNotes'>${e.notes||''}</textarea>
-      </div><div class='edit-actions'><button onclick='saveEdit(${id})'>Save</button><button onclick='renderLog()'>Cancel</button></div>`;
+      const e = entries.find(x => x.id === id); if(!e) return;
+      const div = document.querySelector(`.entry button[onclick*='editEntry(${id})']`).parentElement;
+      div.innerHTML = `<div class='edit-form'>
+          <label>Category:</label><select id='editPattern'>${categories.filter(c=>c!=='Home').map(c=>`<option${c===e.pattern?' selected':''}>${c}</option>`).join('')}</select>
+          <label>Date:</label><input id='editDate' type='date' value='${new Date(e.date).toISOString().slice(0,10)}'/>
+          <label>Symbol:</label><input id='editSym' value='${e.sym}'/>
+          <label>Avg Price:</label><input id='editAvg' type='number' step='0.01' value='${e.avg||''}'/>
+          <label>Shares:</label><input id='editShares' type='number' value='${e.shares||''}'/>
+          <label>Stop:</label><input id='editStop' type='number' step='0.01' value='${e.stop||''}'/>
+          <label>Notes:</label><textarea id='editNotes'>${e.notes||''}</textarea>
+        </div><div class='edit-actions'><button onclick='saveEdit(${id})'>Save</button><button onclick='renderLog()'>Cancel</button></div>`;
     }
 
     function saveEdit(id){
-      const e=entries.find(x=>x.id===id); if(!e) return;
-      e.pattern=document.getElementById('editPattern').value;
-      const dv=document.getElementById('editDate').value; const dt=dv?new Date(dv):new Date(); e.date=dt.toLocaleString(); e.dateKey=dt.toLocaleDateString();
-      e.sym=document.getElementById('editSym').value.trim().toUpperCase(); e.avg=parseFloat(document.getElementById('editAvg').value)||null;
-      e.shares=parseInt(document.getElementById('editShares').value)||null; e.stop=parseFloat(document.getElementById('editStop').value)||null;
-      e.notes=document.getElementById('editNotes').value.trim()||null;
+      const e = entries.find(x => x.id === id); if(!e) return;
+      e.pattern = document.getElementById('editPattern').value;
+      const dv = document.getElementById('editDate').value; const dt = dv?new Date(dv):new Date();
+      e.date = dt.toLocaleString(); e.dateKey = dt.toLocaleDateString();
+      e.sym = document.getElementById('editSym').value.trim().toUpperCase(); e.avg = parseFloat(document.getElementById('editAvg').value)||null;
+      e.shares = parseInt(document.getElementById('editShares').value)||null; e.stop = parseFloat(document.getElementById('editStop').value)||null;
+      e.notes = document.getElementById('editNotes').value.trim()||null;
       saveEntries(); renderLog();
     }
 
-    function removeEntry(id){ entries=entries.filter(e=>e.id!==id); saveEntries(); renderLog(); }
+    function removeEntry(id){ entries = entries.filter(e => e.id !== id); saveEntries(); renderLog(); }
 
-    function moveTo(btn,target){
-      const entryDiv=btn.closest('.entry'); const remover=entryDiv.querySelector("button[onclick*='removeEntry']");
-      const id=parseFloat(remover.getAttribute('onclick').match(/removeEntry\((\d+\.?\d*)\)/)[1]); const e=entries.find(x=>x.id===id);
-      if(e){ entries=entries.filter(x=>x.id!==id); e.id=Date.now()+Math.random(); e.pattern=target;
+    function moveTo(btn, target){
+      const entryDiv = btn.closest('.entry');
+      const remover = entryDiv.querySelector("button[onclick*='removeEntry']");
+      const id = parseFloat(remover.getAttribute('onclick').match(/removeEntry\((\d+\.?\d*)\)/)[1]);
+      const e = entries.find(x => x.id === id);
+      if(e){ entries = entries.filter(x => x.id !== id); e.id = Date.now() + Math.random(); e.pattern = target;
         if(['Wins','Losses'].includes(target)){ e.avg=e.shares=e.stop=e.notes=null; }
         entries.unshift(e); saveEntries(); selectPattern(target);
       }
