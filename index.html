@@ -80,8 +80,8 @@
     const periodList = document.getElementById('periods');
     const dropdown = document.getElementById('patternType');
 
-    function save() { localStorage.setItem('entries',JSON.stringify(entries)); }
-    function load() { const d=localStorage.getItem('entries'); if(d) entries=JSON.parse(d); }
+    function save() { localStorage.setItem('tradeJournalEntries', JSON.stringify(entries)); }
+    function load() { const d = localStorage.getItem('tradeJournalEntries') || localStorage.getItem('entries'); if (d) entries = JSON.parse(d); }
 
     function initSidebar() {
       // group toggles
