@@ -30,11 +30,8 @@
     .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
     .toolbar label { color: var(--muted); font-size: 0.9rem; }
     .toolbar input, .toolbar select, .toolbar textarea, .toolbar button {
-      padding: 6px 8px;
-      background: var(--sidebar-bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 4px;
+      padding: 6px 8px; background: var(--sidebar-bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 4px;
     }
     .toolbar textarea { min-width: 200px; min-height: 40px; resize: vertical; }
     .toolbar button:hover { background: var(--hover); }
@@ -58,25 +55,16 @@
 </head>
 <body>
   <div class="app">
-    <nav class="sidebar">
-      <ul id="patterns"></ul>
-    </nav>
+    <nav class="sidebar"><ul id="patterns"></ul></nav>
     <div class="content">
       <div class="toolbar">
-        <label for="patternType">Category:</label>
-        <select id="patternType"></select>
-        <label for="entryDate">Date:</label>
-        <input id="entryDate" type="date" />
-        <label for="symbol">Symbol:</label>
-        <input id="symbol" placeholder="e.g. AAPL" />
-        <label for="avgPrice">Avg Price:</label>
-        <input id="avgPrice" type="number" step="0.01" placeholder="opt." />
-        <label for="shares">Shares:</label>
-        <input id="shares" type="number" placeholder="opt." />
-        <label for="stopPrice">Stop:</label>
-        <input id="stopPrice" type="number" step="0.01" placeholder="opt." />
-        <label for="notes">Notes:</label>
-        <textarea id="notes" placeholder="Entry rationale (optional)"></textarea>
+        <label for="patternType">Category:</label><select id="patternType"></select>
+        <label for="entryDate">Date:</label><input id="entryDate" type="date" />
+        <label for="symbol">Symbol:</label><input id="symbol" placeholder="e.g. AAPL" />
+        <label for="avgPrice">Avg Price:</label><input id="avgPrice" type="number" step="0.01" placeholder="opt." />
+        <label for="shares">Shares:</label><input id="shares" type="number" placeholder="opt." />
+        <label for="stopPrice">Stop:</label><input id="stopPrice" type="number" step="0.01" placeholder="opt." />
+        <label for="notes">Notes:</label><textarea id="notes" placeholder="Entry rationale (optional)"></textarea>
         <button onclick="logEntry()">Log Trade</button>
       </div>
       <div class="log" id="log"></div>
@@ -84,53 +72,71 @@
   </div>
   <script>
     const categories = ['Home', 'Flagging', 'Watch for Breakout', 'Current Positions', 'Wins', 'Losses'];
-    let currentPattern = null, entries = [];
-    const sidebarList = document.getElementById('patterns'), dropdown = document.getElementById('patternType');
+    let currentPattern = null;
+    let entries = [];
 
-    function saveEntries(){ localStorage.setItem('tradeJournalEntries', JSON.stringify(entries)); }
-    function loadEntries(){ const data = localStorage.getItem('tradeJournalEntries'); if(data) entries = JSON.parse(data); }
+    const sidebarList = document.getElementById('patterns');
+    const dropdown = document.getElementById('patternType');
 
-    function initCategories(){
+    function saveEntries() { localStorage.setItem('tradeJournalEntries', JSON.stringify(entries)); }
+    function loadEntries() { const d = localStorage.getItem('tradeJournalEntries'); if (d) entries = JSON.parse(d); }
+
+    function initCategories() {
       categories.forEach(cat => {
-        const li = document.createElement('li'); li.className = 'sub'; li.dataset.pattern = cat; li.innerText = cat;
-        li.addEventListener('click', () => selectPattern(cat)); sidebarList.appendChild(li);
+        const li = document.createElement('li');
+        li.className = 'sub';
+        li.dataset.pattern = cat;
+        li.innerText = cat;
+        li.addEventListener('click', () => selectPattern(cat));
+        sidebarList.appendChild(li);
       });
       categories.filter(c => c !== 'Home').forEach(cat => {
-        const opt = document.createElement('option'); opt.value = cat; opt.innerText = cat; dropdown.appendChild(opt);
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.innerText = cat;
+        dropdown.appendChild(opt);
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      loadEntries(); initCategories(); dropdown.addEventListener('change', () => selectPattern(dropdown.value)); selectPattern('Home');
+      loadEntries();
+      initCategories();
+      dropdown.addEventListener('change', () => selectPattern(dropdown.value));
+      selectPattern('Home');
     });
 
-    function selectPattern(pattern){
-      currentPattern = pattern; if(pattern !== 'Home') dropdown.value = pattern;
+    function selectPattern(pattern) {
+      currentPattern = pattern;
+      if (pattern !== 'Home') dropdown.value = pattern;
       document.querySelectorAll('.sidebar .sub.selected').forEach(el => el.classList.remove('selected'));
       document.querySelector(`.sidebar .sub[data-pattern='${pattern}']`)?.classList.add('selected');
       renderLog();
     }
 
-    function logEntry(){
-      const sym = document.getElementById('symbol').value.trim().toUpperCase(); if(!sym) return alert('Enter a symbol');
+    function logEntry() {
+      if (currentPattern === 'Home') return;
+      const sym = document.getElementById('symbol').value.trim().toUpperCase();
+      if (!sym) return alert('Enter a symbol');
       const avg = parseFloat(document.getElementById('avgPrice').value) || null;
       const shares = parseInt(document.getElementById('shares').value) || null;
       const stop = parseFloat(document.getElementById('stopPrice').value) || null;
       const notes = document.getElementById('notes').value.trim() || null;
-      const dateInput = document.getElementById('entryDate').value;
-      const now = dateInput ? new Date(dateInput) : new Date();
-      const dateKey = now.toLocaleDateString(), dateStr = now.toLocaleString();
-      const entry = { id: Date.now() + Math.random(), sym, pattern: currentPattern, avg, shares, stop, notes, date: dateStr, dateKey };
-      entries.unshift(entry); saveEntries();
-      ['entryDate','symbol','avgPrice','shares','stopPrice','notes'].forEach(id => document.getElementById(id).value='');
+      const di = document.getElementById('entryDate').value;
+      const now = di ? new Date(di) : new Date();
+      const key = now.toLocaleDateString(), str = now.toLocaleString();
+      const e = { id: Date.now() + Math.random(), sym, pattern: currentPattern, avg, shares, stop, notes, date: str, dateKey: key };
+      entries.unshift(e);
+      saveEntries();
+      ['entryDate','symbol','avgPrice','shares','stopPrice','notes'].forEach(id => document.getElementById(id).value = '');
       renderLog();
     }
 
-    function renderLog(){
-      const logDiv = document.getElementById('log'); logDiv.innerHTML = '';
-      if(currentPattern === 'Home'){
+    function renderLog() {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML = '';
+      if (currentPattern === 'Home') {
         logDiv.innerHTML = `
-          <h2>Trading Journal v3</h2>
+          <h2>Trading Journal</h2>
           <p>This tool helps you log and review your trades. Use the sidebar or dropdown to navigate:</p>
           <ul>
             <li><strong>Flagging:</strong> Mark stocks to watch.</li>
@@ -141,69 +147,70 @@
           </ul>
           <p><strong>Date:</strong> Leave blank to default to today or pick a past date.</p>
           <p><strong>Notes:</strong> Record your entry rationale or observations here.</p>
-          <p><strong>Report:</strong> Use the Report button to open the Base.Report page for flagged/breakout stocks. NEW!!!</p>
+          <p><strong>Report:</strong> Use the Report button to open the Base.Report page for flagged/breakout stocks.</p>
           <p>Click <em>Edit</em> on any entry to update details or change sections.</p>
-        `; return;
+        `;
+        return;
       }
-      const filtered = entries.filter(e => e.pattern === currentPattern);
-      if(!filtered.length){ logDiv.textContent = `No entries for ${currentPattern}`; return; }
+      const list = entries.filter(e => e.pattern === currentPattern);
+      if (currentPattern === 'Flagging' || currentPattern === 'Watch for Breakout') {
+        list.forEach(e => {
+          const d = document.createElement('div'); d.className = 'entry';
+          let h = `<span><strong>${e.sym}</strong></span>`;
+          if (e.notes) h += `<div class='note'>${e.notes}</div>`;
+          h += `<span>${e.date}</span>`;
+          h += `<button onclick="window.open('https://base.report/ticker/${e.sym}','_blank')">Report</button>`;
+          h += `<button onclick='editEntry(${e.id})'>Edit</button><button onclick='removeEntry(${e.id})'>×</button>`;
+          d.innerHTML = h;
+          logDiv.appendChild(d);
+        });
+        return;
+      }
       const groups = {};
-      filtered.forEach(e => { if(!groups[e.dateKey]) groups[e.dateKey] = []; groups[e.dateKey].push(e); });
+      list.forEach(e => { if (!groups[e.dateKey]) groups[e.dateKey] = []; groups[e.dateKey].push(e); });
       Object.keys(groups).sort().forEach(dateKey => {
         const dv = document.createElement('div'); dv.className = 'date-group'; dv.innerHTML = `<h3>${dateKey}</h3>`;
         groups[dateKey].forEach(e => {
-          const div = document.createElement('div'); div.className = 'entry';
-          let html = `<span><strong>${e.sym}</strong>${e.avg!=null?` | Avg: $${e.avg.toFixed(2)}`:''}${e.shares!=null?` | Shares: ${e.shares}`:''}${e.stop!=null?` | Stop: $${e.stop.toFixed(2)}`:''}</span>`;
-          if(e.notes) html+=`<div class='note'>${e.notes}</div>`;
-          html+=`<span>${e.date}</span>`;
-          if(e.pattern==='Current Positions'&&e.avg!=null&&e.stop!=null&&e.shares){
-            const rr=e.avg-e.stop, t1=(e.avg+rr*3).toFixed(2), t2=(e.avg+rr*5).toFixed(2), q1=Math.floor(e.shares*0.2), q2=Math.floor(e.shares*0.3);
-            html+=`<div class='trim'>🔔 Trim20%: Sell ${q1}@${t1}</div><div class='trim'>🔔 Trim30%: Sell ${q2}@${t2}</div><button onclick='moveTo(this,"Wins")'>Win</button><button onclick='moveTo(this,"Losses")'>Loss</button>`;
+          const d = document.createElement('div'); d.className = 'entry';
+          let h = `<span><strong>${e.sym}</strong>${e.avg!=null?` | Avg: $${e.avg.toFixed(2)}`:''}${e.shares!=null?` | Shares: ${e.shares}`:''}${e.stop!=null?` | Stop: $${e.stop.toFixed(2)}`:''}</span>`;
+          if (e.notes) h += `<div class='note'>${e.notes}</div>`;
+          h += `<span>${e.date}</span>`;
+          if (e.pattern === 'Current Positions' && e.avg!=null && e.stop!=null && e.shares) {
+            const rr = e.avg - e.stop;
+            const t1 = (e.avg + rr*3).toFixed(2);
+            const t2 = (e.avg + rr*5).toFixed(2);
+            const q1 = Math.floor(e.shares*0.2), q2 = Math.floor(e.shares*0.3);
+            h += `<div class='trim'>🔔 Trim20%: Sell ${q1}@${t1}</div><div class='trim'>🔔 Trim30%: Sell ${q2}@${t2}</div>`;
+            h += `<button onclick='moveTo(this,"Wins")'>Win</button><button onclick='moveTo(this,"Losses")'>Loss</button>`;
           }
-          if(e.pattern==='Flagging'||e.pattern==='Watch for Breakout'){
-            html+=`<button onclick="window.open('https://base.report/ticker/${e.sym}','_blank')">Report</button>`;
+          if (e.pattern === 'Flagging' || e.pattern === 'Watch for Breakout') {
+            h += `<button onclick="window.open('https://base.report/ticker/${e.sym}','_blank')">Report</button>`;
           }
-          html+=`<button onclick='editEntry(${e.id})'>Edit</button><button onclick='removeEntry(${e.id})'>×</button>`;
-          div.innerHTML=html; dv.appendChild(div);
-        }); logDiv.appendChild(dv);
+          h += `<button onclick='editEntry(${e.id})'>Edit</button><button onclick='removeEntry(${e.id})'>×</button>`;
+          d.innerHTML = h;
+          dv.appendChild(d);
+        });
+        logDiv.appendChild(dv);
       });
     }
 
-    function editEntry(id){
-      const e = entries.find(x => x.id === id); if(!e) return;
-      const div = document.querySelector(`.entry button[onclick*='editEntry(${id})']`).parentElement;
-      div.innerHTML = `<div class='edit-form'>
-          <label>Category:</label><select id='editPattern'>${categories.filter(c=>c!=='Home').map(c=>`<option${c===e.pattern?' selected':''}>${c}</option>`).join('')}</select>
-          <label>Date:</label><input id='editDate' type='date' value='${new Date(e.date).toISOString().slice(0,10)}'/>
-          <label>Symbol:</label><input id='editSym' value='${e.sym}'/>
-          <label>Avg Price:</label><input id='editAvg' type='number' step='0.01' value='${e.avg||''}'/>
-          <label>Shares:</label><input id='editShares' type='number' value='${e.shares||''}'/>
-          <label>Stop:</label><input id='editStop' type='number' step='0.01' value='${e.stop||''}'/>
-          <label>Notes:</label><textarea id='editNotes'>${e.notes||''}</textarea>
-        </div><div class='edit-actions'><button onclick='saveEdit(${id})'>Save</button><button onclick='renderLog()'>Cancel</button></div>`;
+    function editEntry(id) {
+      const e = entries.find(x => x.id === id); if (!e) return;
+      alert('Edit ' + e.sym);
     }
-
-    function saveEdit(id){
-      const e = entries.find(x => x.id === id); if(!e) return;
-      e.pattern = document.getElementById('editPattern').value;
-      const dv = document.getElementById('editDate').value; const dt = dv?new Date(dv):new Date();
-      e.date = dt.toLocaleString(); e.dateKey = dt.toLocaleDateString();
-      e.sym = document.getElementById('editSym').value.trim().toUpperCase(); e.avg = parseFloat(document.getElementById('editAvg').value)||null;
-      e.shares = parseInt(document.getElementById('editShares').value)||null; e.stop = parseFloat(document.getElementById('editStop').value)||null;
-      e.notes = document.getElementById('editNotes').value.trim()||null;
-      saveEntries(); renderLog();
-    }
-
-    function removeEntry(id){ entries = entries.filter(e => e.id !== id); saveEntries(); renderLog(); }
-
-    function moveTo(btn, target){
-      const entryDiv = btn.closest('.entry');
-      const remover = entryDiv.querySelector("button[onclick*='removeEntry']");
-      const id = parseFloat(remover.getAttribute('onclick').match(/removeEntry\((\d+\.?\d*)\)/)[1]);
+    function removeEntry(id) { entries = entries.filter(e => e.id !== id); saveEntries(); renderLog(); }
+    function moveTo(btn, target) {
+      const div = btn.closest('.entry');
+      const rm = div.querySelector("button[onclick*='removeEntry']");
+      const id = parseFloat(rm.getAttribute('onclick').match(/removeEntry\((\d+\.?\d*)\)/)[1]);
       const e = entries.find(x => x.id === id);
-      if(e){ entries = entries.filter(x => x.id !== id); e.id = Date.now() + Math.random(); e.pattern = target;
-        if(['Wins','Losses'].includes(target)){ e.avg=e.shares=e.stop=e.notes=null; }
-        entries.unshift(e); saveEntries(); selectPattern(target);
+      if (e) {
+        entries = entries.filter(x => x.id !== id);
+        e.id = Date.now() + Math.random();
+        e.pattern = target;
+        if (['Wins','Losses'].includes(target)) { e.avg = e.shares = e.stop = e.notes = null; }
+        entries.unshift(e);
+        saveEntries(); selectPattern(target);
       }
     }
   </script>
