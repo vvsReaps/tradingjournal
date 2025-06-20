@@ -188,7 +188,6 @@
             html += `<div class='trim'>🔔 Trim 30%: Sell ${q2} @ $${t2}</div>`;
             html += `<button onclick='moveTo(this,"Wins")'>Win</button> <button onclick='moveTo(this,"Losses")'>Loss</button>`;
           }
-          // Report button for Flagging & Watch for Breakout
           if (e.pattern === 'Flagging' || e.pattern === 'Watch for Breakout') {
             html += `<button onclick="window.open('https://base.report/ticker/${e.sym}','_blank')">Report</button>`;
           }
@@ -198,9 +197,34 @@
       });
     }
 
-    function editEntry(id) { /* unchanged */ alert('Edit '+id); }
-    function removeEntry(id) { entries = entries.filter(e => e.id !== id); saveEntries(); renderLog(); }
-    function moveTo(btn, target) { /* unchanged */ }
+    function editEntry(id) {
+      const e = entries.find(x => x.id === id);
+      if (!e) return;
+      // implement edit logic here or call existing edit form
+      alert('Edit '+e.sym);
+    }
+
+    function removeEntry(id) {
+      entries = entries.filter(e => e.id !== id);
+      saveEntries(); renderLog();
+    }
+
+    function moveTo(btn, target) {
+      const entryDiv = btn.closest('.entry');
+      const removeBtn = entryDiv.querySelector("button[onclick*='removeEntry']");
+      const id = parseFloat(removeBtn.getAttribute('onclick').match(/removeEntry\((\d+\.?\d*)\)/)[1]);
+      const e = entries.find(x => x.id === id);
+      if (e) {
+        entries = entries.filter(x => x.id !== id);
+        e.id = Date.now() + Math.random();
+        e.pattern = target;
+        if (target === 'Wins' || target === 'Losses') {
+          e.avg = e.shares = e.stop = e.notes = null;
+        }
+        entries.unshift(e);
+        saveEntries(); selectPattern(target);
+      }
+    }
   </script>
 </body>
 </html>
