@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Trade Journal v2 [BETA]</title>
+  <title>Trade Journal v2</title>
   <style>
     :root {
       --bg: #121212;
@@ -110,7 +110,24 @@
     }
 
     function logEntry(){
-      if(currentPattern==='Home')return;
+      if (currentPattern === 'Home') {
+        logDiv.innerHTML = `
+          <h2>Trading Journal v2</h2>
+          <p>This tool helps you log and review your trades. Use the sidebar or dropdown to navigate:</p>
+          <ul>
+            <li><strong>Flagging:</strong> Mark stocks to watch.</li>
+            <li><strong>Watch for Breakout:</strong> Log alert setups.</li>
+            <li><strong>Current Positions:</strong> Track open trades with entry info, trim reminders, and move to Wins/Losses.</li>
+            <li><strong>Wins:</strong> Review completed winning trades.</li>
+            <li><strong>Losses:</strong> Review completed losing trades.</li>
+          </ul>
+          <p><strong>Date:</strong> Leave blank to default to today or pick a past date.</p>
+          <p><strong>Notes:</strong> Record your entry rationale or observations here.</p>
+          <p><strong>Report:</strong> Use the Report button to open the Base.Report page for flagged/breakout stocks. <- NEW FEATURE!!!</p>
+          <p>Click <em>Edit</em> on any entry to update details or change sections.</p>
+        `;
+        return;
+      }
       const sym=document.getElementById('symbol').value.trim().toUpperCase(); if(!sym) return alert('Enter a symbol');
       const avg=parseFloat(document.getElementById('avgPrice').value)||null;
       const shares=parseInt(document.getElementById('shares').value)||null;
